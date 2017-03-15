@@ -1,0 +1,34 @@
+<template>
+  <div style="width: 801px; text-align:center; margin:0 auto">
+    <el-steps :space="250" :active="2" finish-status="success" :center=true>
+      <el-step title="录入渠道信息"></el-step>
+      <el-step title="选择渠道人员"></el-step>
+      <el-step title="完成"></el-step>
+    </el-steps>
+    <el-table :show-header=false :data="tableData" border style="width: 800">
+      <el-table-column prop="key1" width="200">
+      </el-table-column>
+      <el-table-column prop="value1" width="200">
+      </el-table-column>
+      <el-table-column prop="key2" width="200">
+      </el-table-column>
+      <el-table-column prop="value2" width="200">
+      </el-table-column>
+    </el-table>
+    <el-button type="primary" @click="finish()" style="margin-top: 20px">完 成</el-button>
+  </div>
+</template>
+<script>
+import { mapGetters } from 'vuex'
+export default {
+  computed: mapGetters({
+    tableData: 'result'
+  }),
+  methods: {
+    finish () {
+      this.$store.commit('RESET_CHANNEL')
+      this.$router.push({ path: '/' })
+    }
+  }
+}
+</script>
