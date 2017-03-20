@@ -22,11 +22,17 @@
 import { mapGetters } from 'vuex'
 export default {
   computed: mapGetters({
-    tableData: 'result'
+    tableData: 'result',
+    channel: 'channel'
   }),
   methods: {
     finish () {
-      this.$store.commit('RESET_CHANNEL')
+      let channelID = this.channel.id
+      this.$store.dispatch('synXmpp', {channelID: channelID}).then(
+        () => { console.log('完成：渠道自动同步成功！') },
+        () => { console.log('完成：渠道自动同步失败！') }
+      )
+      this.$store.dispatch('resetChannel')
       this.$router.push({ path: '/' })
     }
   }

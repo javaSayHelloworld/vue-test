@@ -60,19 +60,17 @@
         width="180">
       </el-table-column>
       <el-table-column
+        prop="gmtCreate"
         label="创建时间"
-        width="180">
-        <template scope="scope">
-          <el-icon name="time"></el-icon>
-          <span style="margin-left: 10px">{{ scope.row.gmtCreate }}</span>
-        </template>
+        width="180"
+        :formatter="formatDatetime">
       </el-table-column>
 
       <el-table-column label="操作">
         <template scope="scope">
           <el-button
             size="small"
-            @click="handleManage(scope.$index, scope.row)">管理渠道人员</el-button>
+            @click="synXmpp(scope.$index, scope.row)">同步</el-button>
           <el-button
             size="small"
             @click="handleEdit(scope.$index, scope.row)">编辑</el-button>
@@ -128,12 +126,26 @@
       formatStatus (row, column) {
         return this.statusArr[row.status]
       },
+      formatDatetime (row, column) {
+        function add0 (m) {
+          return m < 10 ? '0' + m : m
+        }
+        var time = new Date(row.gmtCreate)
+        var y = time.getFullYear()
+        var m = time.getMonth() + 1
+        var d = time.getDate()
+
+        return y + '-' + add0(m) + '-' + add0(d)
+      },
       handleAdd () {
+        this.$store.dispatch('resetChannel')
         this.$router.push({ path: '/channel/add' })
       },
-      handleManage (index, row) {
-        this.$store.commit('SET_CHANNEL', {channel: row})
-        this.$router.push({ path: '/channel/user' })
+      synXmpp (index, row) {
+        this.$store.dispatch('synXmpp', { channelID: row.id }).then(
+          () => { this.$message.success('渠道人员同步成功!') },
+          () => { this.$message.error('渠道人员同步失败！') }
+        )
       },
       handleEdit (index, row) {
         this.$store.commit('SET_CHANNEL', {channel: row})
@@ -146,11 +158,13 @@
           type: 'warning'
         }).then(() => {
           this.$store.dispatch('removeChannel', {index, row}).then(() => {
-            this.$message({ type: 'success', message: '删除成功!' })
+            this.$message({ type: 'success', message: '删除成功' })
           }, () => {
-            this.$message({ type: 'error', message: '删除出错!' })
+            this.$message({ type: 'error', message: '删除出错' })
           })
-        })
+        },
+        () => { this.$message.warning('取消删除') }
+       )
       }
     }
   }

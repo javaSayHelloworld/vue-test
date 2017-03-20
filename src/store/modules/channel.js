@@ -1,4 +1,6 @@
 import channelAPI from '../../api/channel'
+import orgAPI from '../../api/org'
+import userAPI from '../../api/user'
 import * as types from '../mutation-types'
 
 // initial state
@@ -16,28 +18,16 @@ const state = {
     autoJoinByUserType: '',
     users: new Set()
   },
+  orgs: [],
   statusArr: ['开放策略', '半封闭策略', '封闭策略'],
-  userTypes: [{
-    value: '1',
-    label: '营销人员'
-  }, {
-    value: '2',
-    label: '投资顾问'
-  }, {
-    value: '3',
-    label: '总部客服'
-  }, {
-    value: '4',
-    label: '柜台专员'
-  }, {
-    value: '9',
-    label: '客服专员'
-  }]
+  userTypes: [{ value: '1', label: '营销人员' }, { value: '2', label: '投资顾问' }, {
+    value: '3', label: '总部客服' }, { value: '4', label: '柜台专员' }, { value: '9', label: '客服专员' }]
 }
 
 // getters
 const getters = {
   allChannels: state => state.channels,
+  orgs: state => state.orgs,
   channel: state => state.channel,
   statusArr: state => state.statusArr,
   userTypes: state => state.userTypes,
@@ -83,8 +73,53 @@ const actions = {
         if (response.data.des === 'successful') {
           resolve()
         } else reject()
+      },
+      (response) => {
+        console.log('=====渠道新增出错=====')
+        console.log(response)
       })
     })
+  },
+  synXmpp ({ commit }, { channelID }) {
+    return new Promise((resolve, reject) => {
+      channelAPI.synXmpp(channelID).then((response) => {
+        if (response.data.code === 1) {
+          resolve()
+        } else reject()
+      }, (response) => { reject() })
+    })
+  },
+  getAllOrgs ({ commit }) {
+    if (state.orgs.length === 0) {
+      orgAPI.getOrgs().then(
+        (response) => { state.orgs = response.data }
+      )
+    }
+  },
+  getAllUsers ({ commit }, { pageNo, pageSize }) {
+    return new Promise((resolve, reject) => {
+      userAPI.getUsers(pageNo, pageSize).then(
+        (response) => { resolve(response) },
+        (response) => { reject(response) }
+      )
+    })
+  },
+  checkChannelCode ({ commit }, { code, channelID }) {
+    return new Promise((resolve, reject) => {
+      channelAPI.checkChannelCode(code, channelID).then(
+        (response) => {
+          if (response.data.code === '0') {
+            resolve(true)
+          } else {
+            resolve(false)
+          }
+        },
+        () => { resolve(false) }
+      )
+    })
+  },
+  resetChannel ({ commit }) {
+    commit(types.RESET_CHANNEL)
   }
 }
 
@@ -119,7 +154,7 @@ const mutations = {
       visibleTime: 15,
       maxSessionNum: 5,
       autoJoinByOrg: '',
-      autoJoinByUserTpye: '',
+      autoJoinByUserType: '',
       users: new Set()
     })
   }

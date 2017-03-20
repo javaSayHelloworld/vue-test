@@ -73,30 +73,22 @@
 import { mapGetters } from 'vuex'
 export default {
   beforeMount () {
-    let that = this
-    this.$ajax.get('/admin/user/list/' + this.startNum + '/' + this.pageSize)
-      .then(function (response) {
-        that.tableData = response.data.list
-        that.total = response.data.total
-        that.$nextTick(function () {
-          that.tableData.forEach(row => {
-            if (that.channel.users.has(row.id + '')) {
+    let vm = this
+    let param = { pageNo: this.startNum, pageSize: this.pageSize }
+    this.$store.dispatch('getAllUsers', param).then(
+      (response) => {
+        vm.tableData = response.data.list
+        vm.total = response.data.total
+        vm.$nextTick(() => {
+          vm.tableData.forEach(row => {
+            if (vm.channel.users.has(row.id + '')) {
               this.$refs.userTable.toggleRowSelection(row, true)
             }
           })
         })
-      })
-      .catch(function (response) {
-        console.log(response)
-      })
-
-    this.$ajax.get('/admin/org/list')
-      .then(function (response) {
-        that.orgs = response.data
-      })
-      .catch(function (response) {
-        console.log('获取营业部信息出错')
-      })
+      }
+    )
+    this.$store.dispatch('getAllOrgs')
   },
   data () {
     return {
@@ -105,23 +97,6 @@ export default {
       startNum: 1,
       pageSize: 10,
       total: 10,
-      orgs: [],
-      userTypes: [{
-        value: '1',
-        label: '营销人员'
-      }, {
-        value: '2',
-        label: '投资顾问'
-      }, {
-        value: '3',
-        label: '总部客服'
-      }, {
-        value: '4',
-        label: '柜台专员'
-      }, {
-        value: '9',
-        label: '客服专员'
-      }],
       formInline: {
         orgID: null,
         userType: null
@@ -129,19 +104,19 @@ export default {
     }
   },
   computed: mapGetters({
-    channel: 'channel'
+    channel: 'channel',
+    userTypes: 'userTypes',
+    orgs: 'orgs'
   }),
   methods: {
     back () {
       this.$router.go(-1)
     },
     nextStep () {
-      let obj = {
-        all: this.tableData,
-        selected: this.currentSelection
-      }
+      let obj = { all: this.tableData, selected: this.currentSelection }
       this.$store.commit('ADD_CHANNEL_USER', obj)
-      this.$store.dispatch('addChannel').then(() => { this.$router.push({ path: '/channel/result' }) })
+      this.$store.dispatch('addChannel').then(() => { this.$router.push({ path: '/channel/result' }) },
+      () => { this.message.error('新增渠道出错') })
     },
     handleSelectionChange (val) {
       this.currentSelection = val

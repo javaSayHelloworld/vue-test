@@ -9,25 +9,21 @@
       <el-col :span="10" :offset="6">
         <el-form :model="channel" :rules="rules" ref="channel" label-width="180px" label-position="right">
           <el-form-item label="渠道名称" prop="name" >
-            <el-input v-model="channel.name"></el-input>
+            <el-input v-model.trim="channel.name"></el-input>
           </el-form-item>
           <el-form-item label="渠道代码" prop="code" >
-            <el-input v-model="channel.code"></el-input>
+            <el-input v-model.trim="channel.code"></el-input>
           </el-form-item>
           <el-form-item label="派单策略" required>
             <el-col :span="12">
-              <el-form-item prop="status">
-                <el-select v-model="channel.status" placeholder="请选择派单策略">
-                  <el-option label="开放策略" value="0"></el-option>
-                  <el-option label="半封闭策略" value="1"></el-option>
-                  <el-option label="封闭策略" value="2"></el-option>
-                </el-select>
-              </el-form-item>
+              <el-select v-model="channel.status" placeholder="请选择派单策略">
+                <el-option label="开放策略" value="0"></el-option>
+                <el-option label="半封闭策略" value="1"></el-option>
+                <el-option label="封闭策略" value="2"></el-option>
+              </el-select>
             </el-col>
             <el-col :span="12">
-              <el-form-item prop="timeout">
-                <el-input placeholder="渠道超时时间" v-model="channel.timeout" :number="true" ><template slot="append">秒</template></el-input>
-              </el-form-item>
+              <el-input placeholder="渠道超时时间" v-model="channel.timeout" :number="true" ><template slot="append">秒</template></el-input>
             </el-col>
           </el-form-item>
           <el-form-item label="推送人数" prop="pushedNum">
@@ -39,15 +35,27 @@
           <el-form-item label="最大会话数" prop="maxSessionNum" >
             <el-input v-model.number="channel.maxSessionNum"></el-input>
           </el-form-item>
+          <el-form-item label="自动加入">
+            <el-col :span="15">
+              <el-select v-model="channel.autoJoinByOrg" filterable placeholder="按所属营业部" clearable>
+                <el-option v-for="item in orgs" :label="item.name" :value="item.id"></el-option>
+              </el-select>
+            </el-col>
+            <el-col :span="9">
+              <el-select v-model="channel.autoJoinByUserType" filterable placeholder="按岗位" clearable>
+                <el-option v-for="item in userTypes" :label="item.label" :value="item.value"></el-option>
+              </el-select>
+            </el-col>
+          </el-form-item>
         </el-form>
       </el-col>
     </el-row>
     <el-row >
-      <el-col :span="4" :offset="8">
-        <el-button type="primary" @click="nextStep()">下一步</el-button>
+      <el-col :span="3" :offset="9">
+        <el-button type="primary" @click="nextStep('channel')">下一步</el-button>
       </el-col>
-      <el-col :span="4">
-        <router-link to="/" tag="el-button">返 回</router-link>
+      <el-col :span="3">
+        <router-link to="/" tag="el-button">返  回</router-link>
       </el-col>
     </el-row>
   </div>
@@ -56,11 +64,29 @@
   import { mapGetters } from 'vuex'
 
   export default {
+    created () {
+      this.$store.dispatch('getAllOrgs')
+    },
     data () {
+      var checkCode = (rule, value, callback) => {
+        this.$store.dispatch('checkChannelCode', { code: value }).then(
+          (result) => {
+            if (result === false) {
+              callback(new Error('渠道代码已存在'))
+            } else {
+              callback()
+            }
+          }
+        )
+      }
       return {
         rules: {
           name: [{ required: true, message: '请输入渠道名称', trigger: 'blur' }],
-          code: [{ required: true, message: '请输入渠道代码', trigger: 'blur' }],
+          code: [{ required: true, message: '请输入渠道代码', trigger: 'blur' },
+            {
+              validator: checkCode,
+              trigger: 'blur'
+            }],
           status: [{ required: true, message: '请选择派单策略', trigger: 'blur' }],
           pushedNum: [{ required: true, type: 'integer', message: '请输入整数', trigger: 'blur' }],
           timeout: [{ required: true, type: 'integer', message: '请输入整数', trigger: 'blur' }],
@@ -70,27 +96,17 @@
       }
     },
     computed: mapGetters({
-      channel: 'channel'
+      channel: 'channel',
+      orgs: 'orgs',
+      userTypes: 'userTypes'
     }),
     methods: {
-      nextStep () {
-        let obj = this.channel
-        this.$store.commit('SET_CHANNEL', {channel: obj})
-        this.$router.push({ path: '/channel/user' })
-      },
-      submitForm (formName) {
+      nextStep (formName) {
         this.$refs[formName].validate((valid) => {
           if (valid) {
-            this.$ajax.post('/admin/channel/save', this.channel)
-              .then(function (response) {
-                console.log('创建成功！')
-              })
-              .catch(function (response) {
-                console.log('获取营业部信息出错')
-              })
-          } else {
-            console.log('error submit!!')
-            return false
+            let obj = this.channel
+            this.$store.commit('SET_CHANNEL', {channel: obj})
+            this.$router.push({ path: '/channel/user' })
           }
         })
       }

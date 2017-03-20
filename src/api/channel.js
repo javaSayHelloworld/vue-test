@@ -1,4 +1,5 @@
 import axios from 'axios'
+// import jsonp from 'jsonp'
 
 /**
  * Mocking client-server processing
@@ -9,6 +10,7 @@ const _products = [
   {"id": 3, "title": "Charli XCX - Sucker CD", "price": 19.99, "inventory": 5}
 ]
 */
+const xmppURL = process.env.XMPP_SERVER
 
 export default {
   getChannels () {
@@ -22,5 +24,18 @@ export default {
   },
   addChannel (channel) {
     return axios.post('/admin/channel/save', channel)
+  },
+  synXmpp (channelID) {
+    return axios.get(xmppURL + '/didi/internal/sync?action=channel&id=' + channelID)
+    // jsonp(xmppURL + '/didi/internal/sync?action=channel&id=' + channelID, null, function (err, data) {
+    //   if (err) {
+    //     console.error(err.message)
+    //   } else {
+    //     console.log(JSON.parse(data))
+    //   }
+    // })
+  },
+  checkChannelCode (code, channelID) {
+    return axios.get('/admin/channel/check/' + code + '/' + channelID)
   }
 }
