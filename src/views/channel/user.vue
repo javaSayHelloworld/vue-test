@@ -116,7 +116,7 @@ export default {
       let obj = { all: this.tableData, selected: this.currentSelection }
       this.$store.commit('ADD_CHANNEL_USER', obj)
       this.$store.dispatch('addChannel').then(() => { this.$router.push({ path: '/channel/result' }) },
-      () => { this.message.error('新增渠道出错') })
+      () => { this.$message.error('新增渠道出错') })
     },
     handleSelectionChange (val) {
       this.currentSelection = val

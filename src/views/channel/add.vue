@@ -23,26 +23,26 @@
               </el-select>
             </el-col>
             <el-col :span="12">
-              <el-input placeholder="渠道超时时间" v-model="channel.timeout" :number="true" ><template slot="append">秒</template></el-input>
+              <el-input :disabled="openStrategy" placeholder="渠道超时时间" v-model="channel.timeout" :number="true" ><template slot="append">秒</template></el-input>
             </el-col>
           </el-form-item>
           <el-form-item label="推送人数" prop="pushedNum">
-            <el-input v-model.number="channel.pushedNum"><template slot="append">人/轮</template></el-input>
+            <el-input :disabled="openStrategy" v-model.number="channel.pushedNum"><template slot="append">人/轮</template></el-input>
           </el-form-item>
           <el-form-item label="抢单时间" prop="visibleTime" >
-            <el-input v-model.number="channel.visibleTime"><template slot="append">秒</template></el-input>
+            <el-input :disabled="openStrategy" v-model.number="channel.visibleTime"><template slot="append">秒</template></el-input>
           </el-form-item>
           <el-form-item label="最大会话数" prop="maxSessionNum" >
-            <el-input v-model.number="channel.maxSessionNum"></el-input>
+            <el-input :disabled="openStrategy" v-model.number="channel.maxSessionNum"></el-input>
           </el-form-item>
           <el-form-item label="自动加入">
             <el-col :span="15">
-              <el-select v-model="channel.autoJoinByOrg" filterable placeholder="按所属营业部" clearable>
+              <el-select :disabled="openStrategy" v-model="channel.autoJoinByOrg" filterable placeholder="按所属营业部" clearable>
                 <el-option v-for="item in orgs" :label="item.name" :value="item.id"></el-option>
               </el-select>
             </el-col>
             <el-col :span="9">
-              <el-select v-model="channel.autoJoinByUserType" filterable placeholder="按岗位" clearable>
+              <el-select :disabled="openStrategy" v-model="channel.autoJoinByUserType" filterable placeholder="按岗位" clearable>
                 <el-option v-for="item in userTypes" :label="item.label" :value="item.value"></el-option>
               </el-select>
             </el-col>
@@ -68,8 +68,8 @@
       this.$store.dispatch('getAllOrgs')
     },
     data () {
-      var checkCode = (rule, value, callback) => {
-        this.$store.dispatch('checkChannelCode', { code: value }).then(
+      var checkCode = (rule, code, callback) => {
+        this.$store.dispatch('checkChannelCode', { code }).then(
           (result) => {
             if (result === false) {
               callback(new Error('渠道代码已存在'))
@@ -95,18 +95,29 @@
         }
       }
     },
-    computed: mapGetters({
-      channel: 'channel',
-      orgs: 'orgs',
-      userTypes: 'userTypes'
-    }),
+    computed: {
+      ...mapGetters([
+        'channel',
+        'orgs',
+        'userTypes'
+      ]),
+      openStrategy: function () {
+        return this.channel.status === '0'
+      }
+    },
     methods: {
       nextStep (formName) {
         this.$refs[formName].validate((valid) => {
           if (valid) {
             let obj = this.channel
             this.$store.commit('SET_CHANNEL', {channel: obj})
-            this.$router.push({ path: '/channel/user' })
+            if (this.openStrategy) {  //  开放策略，直接提交
+              this.$store.dispatch('addChannel').then(
+              () => { this.$router.push({ path: '/channel/result' }) },
+              () => { this.$message.error('新增渠道出错') })
+            } else {  // 非开放策略进入选人
+              this.$router.push({ path: '/channel/user' })
+            }
           }
         })
       }

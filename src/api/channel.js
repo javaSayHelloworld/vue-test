@@ -35,7 +35,7 @@ export default {
     //   }
     // })
   },
-  checkChannelCode (code, channelID) {
-    return axios.get('/admin/channel/check/' + code + '/' + channelID)
+  checkChannelCode (code, id) {
+    return axios.post('/admin/channel/check', { id, code })
   }
 }

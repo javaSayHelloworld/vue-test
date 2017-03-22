@@ -7,6 +7,7 @@ import * as types from '../mutation-types'
 const state = {
   channels: [],
   channel: {
+    id: '',
     name: '',
     code: '',
     status: '0',
@@ -71,6 +72,8 @@ const actions = {
     return new Promise((resolve, reject) => {
       channelAPI.addChannel(state.channel).then((response) => {
         if (response.data.des === 'successful') {
+          let channel = response.data.data
+          commit(types.SET_CHANNEL, { channel })
           resolve()
         } else reject()
       },
@@ -104,9 +107,9 @@ const actions = {
       )
     })
   },
-  checkChannelCode ({ commit }, { code, channelID }) {
+  checkChannelCode ({ commit }, { code }) {
     return new Promise((resolve, reject) => {
-      channelAPI.checkChannelCode(code, channelID).then(
+      channelAPI.checkChannelCode(code, state.channel.id).then(
         (response) => {
           if (response.data.code === '0') {
             resolve(true)
@@ -146,6 +149,7 @@ const mutations = {
   },
   [types.RESET_CHANNEL] (state) {
     Object.assign(state.channel, {
+      id: '',
       name: '',
       code: '',
       status: '0',
