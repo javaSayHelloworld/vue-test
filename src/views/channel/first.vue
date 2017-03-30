@@ -1,20 +1,18 @@
 <template>
   <div>
     <el-steps :space="250" :active="0" finish-status="success" :center="true">
-      <el-step title="录入渠道信息"></el-step>
-      <el-step title="选择渠道人员"></el-step>
-      <el-step title="完成"></el-step>
+      <el-step v-for='(title, index) in titles' :key='index' :title="title"></el-step>
     </el-steps>
     <el-row>
       <el-col :span="10" :offset="6">
         <el-form :model="channel" :rules="rules" ref="channel" label-width="180px" label-position="right">
-          <el-form-item label="渠道名称" prop="name" >
+          <el-form-item label="渠道名称" prop="name">
             <el-input v-model.trim="channel.name"></el-input>
           </el-form-item>
-          <el-form-item label="渠道代码" prop="code" >
+          <el-form-item label="渠道代码" prop="code">
             <el-input v-model.trim="channel.code"></el-input>
           </el-form-item>
-          <el-form-item label="派单策略" required>
+          <el-form-item label="派单策略" prop="status">
             <el-col :span="12">
               <el-select v-model="channel.status" placeholder="请选择派单策略">
                 <el-option label="开放策略" value="0"></el-option>
@@ -23,16 +21,16 @@
               </el-select>
             </el-col>
             <el-col :span="12">
-              <el-input :disabled="openStrategy" placeholder="渠道超时时间" v-model="channel.timeout" :number="true" ><template slot="append">秒</template></el-input>
+              <el-input :disabled="openStrategy" placeholder="渠道超时时间" v-model.number="channel.timeout" :number="true" ><template slot="append">秒</template></el-input>
             </el-col>
           </el-form-item>
           <el-form-item label="推送人数" prop="pushedNum">
             <el-input :disabled="openStrategy" v-model.number="channel.pushedNum"><template slot="append">人/轮</template></el-input>
           </el-form-item>
-          <el-form-item label="抢单时间" prop="visibleTime" >
+          <el-form-item label="抢单时间" prop="visibleTime">
             <el-input :disabled="openStrategy" v-model.number="channel.visibleTime"><template slot="append">秒</template></el-input>
           </el-form-item>
-          <el-form-item label="最大会话数" prop="maxSessionNum" >
+          <el-form-item label="最大会话数" prop="maxSessionNum">
             <el-input :disabled="openStrategy" v-model.number="channel.maxSessionNum"></el-input>
           </el-form-item>
           <el-form-item label="自动加入">
@@ -46,6 +44,9 @@
                 <el-option v-for="item in userTypes" :label="item.label" :value="item.value"></el-option>
               </el-select>
             </el-col>
+          </el-form-item>
+          <el-form-item v-show="openStrategy" style="font-family: Microsoft YaHei">
+            * 默认全部客服人员
           </el-form-item>
         </el-form>
       </el-col>
@@ -99,7 +100,8 @@
       ...mapGetters([
         'channel',
         'orgs',
-        'userTypes'
+        'userTypes',
+        'titles'
       ]),
       openStrategy: function () {
         return this.channel.status === '0'
@@ -113,10 +115,10 @@
             this.$store.commit('SET_CHANNEL', {channel: obj})
             if (this.openStrategy) {  //  开放策略，直接提交
               this.$store.dispatch('addChannel').then(
-              () => { this.$router.push({ path: '/channel/result' }) },
+              () => { this.$router.push({ name: 'channelResult' }) },
               () => { this.$message.error('新增渠道出错') })
             } else {  // 非开放策略进入选人
-              this.$router.push({ path: '/channel/user' })
+              this.$router.push({ name: 'channelSecond' })
             }
           }
         })

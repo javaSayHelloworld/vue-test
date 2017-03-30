@@ -55,7 +55,7 @@
         :formatter="formatStatus">
       </el-table-column>
       <el-table-column
-        prop="users.length"
+        prop="num"
         label="渠道人数"
         width="180">
       </el-table-column>
@@ -109,11 +109,13 @@
       this.$store.dispatch('getAllChannels').then(() => { },
        () => { this.$message.error('渠道数据加载失败！') })
     },
-    computed: mapGetters({
-      tableData: 'allChannels',
-      statusArr: 'statusArr',
-      userTypes: 'userTypes'
-    }),
+    computed: {
+      ...mapGetters({
+        tableData: 'allChannels',
+        statusArr: 'statusArr',
+        userTypes: 'userTypes'
+      })
+    },
     filters: {
       formatUserType: function (value) {
         let userTypes = [{ value: '1', label: '营销人员' }, { value: '2', label: '投资顾问' }, {
@@ -139,17 +141,17 @@
       },
       handleAdd () {
         this.$store.dispatch('resetChannel')
-        this.$router.push({ path: '/channel/add' })
+        this.$router.push({ name: 'channelFirst' })
       },
       synXmpp (index, row) {
         this.$store.dispatch('synXmpp', { channelID: row.id }).then(
-          () => { this.$message.success('渠道人员同步成功!') },
-          () => { this.$message.error('渠道人员同步失败！') }
+          () => { this.$message.success(row.name + '渠道人员同步成功!') },
+          () => { this.$message.error(row.name + '渠道人员同步失败！') }
         )
       },
       handleEdit (index, row) {
         this.$store.commit('SET_CHANNEL', {channel: row})
-        this.$router.push({ path: '/channel/add' })
+        this.$router.push({ name: 'channelFirst' })
       },
       handleDelete (index, row) {
         this.$confirm('是否删除该记录?', '提示', {

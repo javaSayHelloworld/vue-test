@@ -1,9 +1,7 @@
 <template>
   <div>
     <el-steps :space="250" :active="1" finish-status="success" :center=true>
-      <el-step title="录入渠道信息"></el-step>
-      <el-step title="选择渠道人员"></el-step>
-      <el-step title="完成"></el-step>
+      <el-step v-for='(title, index) in titles' :key='index' :title="title"></el-step>
     </el-steps>
 
     <el-form :inline="true" :model="formInline" class="demo-form-inline">
@@ -20,6 +18,15 @@
         <el-select v-model="formInline.userType" placeholder="请选择服务人员类别" clearable>
           <el-option
             v-for="item in userTypes"
+            :label="item.label"
+            :value="item.value">
+          </el-option>
+        </el-select>
+      </el-form-item>
+      <el-form-item>
+        <el-select v-model="formInline.status" placeholder="请选择" clearable>
+          <el-option
+            v-for="item in statusArr"
             :label="item.label"
             :value="item.value">
           </el-option>
@@ -99,14 +106,17 @@ export default {
       total: 10,
       formInline: {
         orgID: null,
-        userType: null
-      }
+        userType: null,
+        status: null
+      },
+      statusArr: [{ value: 1, label: '已选择' }, { value: 2, label: '未选择' }]
     }
   },
   computed: mapGetters({
     channel: 'channel',
     userTypes: 'userTypes',
-    orgs: 'orgs'
+    orgs: 'orgs',
+    titles: 'titles'
   }),
   methods: {
     back () {

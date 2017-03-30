@@ -33,7 +33,7 @@ export default {
         () => { console.log('完成：渠道自动同步失败！') }
       )
       this.$store.dispatch('resetChannel')
-      this.$router.push({ path: '/' })
+      this.$router.push({ name: 'channelMain' })
     }
   }
 }

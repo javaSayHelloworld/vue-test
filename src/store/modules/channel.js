@@ -20,6 +20,7 @@ const state = {
     users: new Set()
   },
   orgs: [],
+  titles: ['录入信息', '选择人员', '完成'],
   statusArr: ['开放策略', '半封闭策略', '封闭策略'],
   userTypes: [{ value: '1', label: '营销人员' }, { value: '2', label: '投资顾问' }, {
     value: '3', label: '总部客服' }, { value: '4', label: '柜台专员' }, { value: '9', label: '客服专员' }]
@@ -27,18 +28,25 @@ const state = {
 
 // getters
 const getters = {
-  allChannels: state => state.channels,
+  allChannels: state => {
+    state.channels.forEach((row) => {
+      row.num = row.status === '0' ? '默认全部客服人员' : row.users.length + '人'
+    })
+    return state.channels
+  },
   orgs: state => state.orgs,
   channel: state => state.channel,
   statusArr: state => state.statusArr,
   userTypes: state => state.userTypes,
+  titles: state => state.titles,
   result: state => {
     let channel = state.channel
+    let num = (channel.status === '0') ? '默认全部客服人员' : channel.users.size + '人'
     let tableData = [
       {key1: '渠道名称：', value1: channel.name, key2: '渠道代码:', value2: channel.code},
       {key1: '派单策略：', value1: state.statusArr[channel.status], key2: '渠道超时时间:', value2: (channel.timeout + '秒')},
       {key1: '推送人数：', value1: (channel.pushedNum + '人/轮'), key2: '抢单时间:', value2: (channel.visibleTime + '秒')},
-      {key1: '最大会话数：', value1: channel.maxSessionNum, key2: '渠道服务人数:', value2: channel.users.size}
+      {key1: '最大会话数：', value1: channel.maxSessionNum, key2: '渠道服务人数:', value2: num}
     ]
     return tableData
   }
@@ -161,6 +169,9 @@ const mutations = {
       autoJoinByUserType: '',
       users: new Set()
     })
+  },
+  [types.REMOVE_STEP_TITLE] () {
+    state.titles.splice(1, 1)
   }
 }
 
