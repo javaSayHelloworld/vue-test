@@ -22,8 +22,11 @@ export default {
   getUsers (pageNo, pageSize) {
     return axios.get('/admin/user/list/' + pageNo + '/' + pageSize)
   },
-  addChannel (channel) {
+  saveChannel (channel) {
     return axios.post('/admin/channel/save', channel)
+  },
+  saveUsers (channel) {
+    return axios.post('/admin/channel/saveUsers', channel)
   },
   synXmpp (channelID) {
     return axios.get(xmppURL + '/didi/internal/sync?action=channel&id=' + channelID)

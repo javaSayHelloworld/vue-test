@@ -10,7 +10,7 @@ const state = {
     id: '',
     name: '',
     code: '',
-    status: '0',
+    status: '1',
     pushedNum: 15,
     timeout: 240,
     visibleTime: 15,
@@ -76,9 +76,9 @@ const actions = {
       })
     })
   },
-  addChannel ({ commit }) {
+  saveChannel ({ commit }) {
     return new Promise((resolve, reject) => {
-      channelAPI.addChannel(state.channel).then((response) => {
+      channelAPI.saveChannel(state.channel).then((response) => {
         if (response.data.des === 'successful') {
           let channel = response.data.data
           commit(types.SET_CHANNEL, { channel })
@@ -90,6 +90,22 @@ const actions = {
         console.log(response)
       })
     })
+  },
+  saveUsers ({commit}, { addUsers, removeUsers }) {
+    if (addUsers.size === 0 && removeUsers.size === 0) {
+      return Promise.resolve()
+    } else {
+      commit('ADD_CHANNEL_USER', { addUsers, removeUsers })
+      return new Promise((resolve, reject) => {
+        channelAPI.saveUsers(state.channel).then((response) => {
+          if (response.data.des === 'successful') resolve()
+          else reject()
+        }).catch((response) => {
+          console.log('=====渠道用户保存出错=====')
+          console.log(response)
+        })
+      })
+    }
   },
   synXmpp ({ commit }, { channelID }) {
     return new Promise((resolve, reject) => {
@@ -107,13 +123,11 @@ const actions = {
       )
     }
   },
-  getAllUsers ({ commit }, { pageNo, pageSize }) {
-    return new Promise((resolve, reject) => {
-      userAPI.getUsers(pageNo, pageSize).then(
-        (response) => { resolve(response) },
-        (response) => { reject(response) }
-      )
-    })
+  getAllUsers ({ commit }, param) {
+    return userAPI.getUsers(param)
+  },
+  getQualifiedUsers ({ commit }, param) {
+    return userAPI.getQualifiedUsers(param)
   },
   checkChannelCode ({ commit }, { code }) {
     return new Promise((resolve, reject) => {
@@ -147,12 +161,14 @@ const mutations = {
     Object.assign(state.channel, channel)
     state.channel.users = s
   },
-  [types.ADD_CHANNEL_USER] (state, { all, selected }) {
-    all.forEach(row => {
-      state.channel.users.delete(row.id)
+  [types.ADD_CHANNEL_USER] (state, { addUsers, removeUsers }) {
+    state.channel.addUsers = addUsers
+    state.channel.removeUsers = removeUsers
+    removeUsers.forEach(id => {
+      state.channel.users.delete(id)
     })
-    selected.forEach(row => {
-      state.channel.users.add(row.id)
+    addUsers.forEach(id => {
+      state.channel.users.add(id)
     })
   },
   [types.RESET_CHANNEL] (state) {

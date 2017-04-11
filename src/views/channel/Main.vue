@@ -145,8 +145,8 @@
       },
       synXmpp (index, row) {
         this.$store.dispatch('synXmpp', { channelID: row.id }).then(
-          () => { this.$message.success(row.name + '渠道人员同步成功!') },
-          () => { this.$message.error(row.name + '渠道人员同步失败！') }
+          () => { this.$message.success('"' + row.name + '"渠道人员同步成功!') },
+          () => { this.$message.error('"' + row.name + '"渠道人员同步失败！') }
         )
       },
       handleEdit (index, row) {

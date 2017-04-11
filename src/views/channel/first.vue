@@ -12,16 +12,20 @@
           <el-form-item label="渠道代码" prop="code">
             <el-input v-model.trim="channel.code"></el-input>
           </el-form-item>
-          <el-form-item label="派单策略" prop="status">
+          <el-form-item label="派单策略">
             <el-col :span="12">
-              <el-select v-model="channel.status" placeholder="请选择派单策略">
-                <el-option label="开放策略" value="0"></el-option>
-                <el-option label="半封闭策略" value="1"></el-option>
-                <el-option label="封闭策略" value="2"></el-option>
-              </el-select>
+              <el-form-item prop="status">
+                <el-select v-model="channel.status" placeholder="请选择派单策略">
+                  <el-option label="开放策略" value="0"></el-option>
+                  <el-option label="半封闭策略" value="1"></el-option>
+                  <el-option label="封闭策略" value="2"></el-option>
+                </el-select>
+              </el-form-item>
             </el-col>
             <el-col :span="12">
-              <el-input :disabled="openStrategy" placeholder="渠道超时时间" v-model.number="channel.timeout" :number="true" ><template slot="append">秒</template></el-input>
+              <el-form-item prop="timeout">
+                <el-input :disabled="openStrategy" placeholder="渠道超时时间" v-model.number="channel.timeout" ><template slot="append">秒</template></el-input>
+              </el-form-item>
             </el-col>
           </el-form-item>
           <el-form-item label="推送人数" prop="pushedNum">
@@ -80,19 +84,20 @@
           }
         )
       }
+      let integerNum = { type: 'integer', required: true, message: '请输入整数', trigger: 'blur' }
       return {
+        hello: 'hello!',
         rules: {
           name: [{ required: true, message: '请输入渠道名称', trigger: 'blur' }],
-          code: [{ required: true, message: '请输入渠道代码', trigger: 'blur' },
-            {
-              validator: checkCode,
-              trigger: 'blur'
-            }],
+          code: [
+            { required: true, pattern: /^[a-z]+$/, message: '请输入英文字符', trigger: 'blur' },
+            { validator: checkCode, trigger: 'blur' }
+          ],
           status: [{ required: true, message: '请选择派单策略', trigger: 'blur' }],
-          pushedNum: [{ required: true, type: 'integer', message: '请输入整数', trigger: 'blur' }],
-          timeout: [{ required: true, type: 'integer', message: '请输入整数', trigger: 'blur' }],
-          visibleTime: [{ required: true, type: 'integer', message: '请输入整数', trigger: 'blur' }],
-          maxSessionNum: [{ required: true, type: 'integer', message: '请输入整数', trigger: 'blur' }]
+          pushedNum: [integerNum],
+          timeout: [integerNum],
+          visibleTime: [integerNum],
+          maxSessionNum: [integerNum]
         }
       }
     },
@@ -109,17 +114,38 @@
     },
     methods: {
       nextStep (formName) {
+        let vm = this
         this.$refs[formName].validate((valid) => {
           if (valid) {
-            let obj = this.channel
-            this.$store.commit('SET_CHANNEL', {channel: obj})
-            if (this.openStrategy) {  //  开放策略，直接提交
-              this.$store.dispatch('addChannel').then(
-              () => { this.$router.push({ name: 'channelResult' }) },
-              () => { this.$message.error('新增渠道出错') })
-            } else {  // 非开放策略进入选人
-              this.$router.push({ name: 'channelSecond' })
-            }
+            vm.$confirm('确定提交?', '提示', {
+              confirmButtonText: '确定',
+              cancelButtonText: '取消',
+              type: 'warning'
+            }).then(() => {
+              // 确定添加渠道
+              let obj = vm.channel
+              vm.$store.commit('SET_CHANNEL', {channel: obj})
+              vm.$store.dispatch('saveChannel').then(() => {
+                if (vm.openStrategy) {  //  开放策略,跳转结果页面
+                  vm.$router.push({ name: 'channelResult' })
+                } else {          // 非开放策略，跳转选人页面
+                  vm.$router.push({ name: 'channelSecond' })
+                }
+              }).catch(() => {
+                vm.$message.error('新增渠道出错')
+              })
+            }).catch(
+              () => { this.$message.warning('取消操作') }
+            )
+            // let obj = this.channel
+            // this.$store.commit('SET_CHANNEL', {channel: obj})
+            // if (this.openStrategy) {  //  开放策略，直接提交
+            //   this.$store.dispatch('saveChannel').then(
+            //   () => { this.$router.push({ name: 'channelResult' }) },
+            //   () => { this.$message.error('新增渠道出错') })
+            // } else {  // 非开放策略进入选人
+            //   this.$router.push({ name: 'channelSecond' })
+            // }
           }
         })
       }
