@@ -90,7 +90,7 @@
         rules: {
           name: [{ required: true, message: '请输入渠道名称', trigger: 'blur' }],
           code: [
-            { required: true, pattern: /^[a-z]+$/, message: '请输入英文字符', trigger: 'blur' },
+            { required: true, pattern: /^[a-zA-Z]+$/, message: '请输入英文字符', trigger: 'blur' },
             { validator: checkCode, trigger: 'blur' }
           ],
           status: [{ required: true, message: '请选择派单策略', trigger: 'blur' }],

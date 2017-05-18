@@ -29,7 +29,7 @@ export default {
     return axios.post('/admin/channel/saveUsers', channel)
   },
   synXmpp (channelID) {
-    return axios.get(xmppURL + '/didi/internal/sync?action=channel&id=' + channelID)
+    return axios.get(xmppURL + '/didi/internal/sync?action=channel&id=' + channelID + '&code=26CEF6155B2514B11ECEEC59F51E3013')
     // jsonp(xmppURL + '/didi/internal/sync?action=channel&id=' + channelID, null, function (err, data) {
     //   if (err) {
     //     console.error(err.message)

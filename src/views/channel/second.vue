@@ -139,12 +139,6 @@ export default {
         })
       })
     },
-    nextStep () {
-      let obj = { addUsers: this.addUsers, removeUsers: this.removeUsers }
-      this.$store.dispatch('saveUsers', obj)
-      .then(() => { this.$router.push({ path: '/channel/result' }) })
-      .catch(() => { this.$message.error('保存渠道用户出错') })
-    },
     toggleSelection (user, column, cell, event) {
       if (event.srcElement.checked !== undefined) { // 如果点击的是表格选择框
         if (event.srcElement.checked) {  // 选择框：选中
@@ -166,27 +160,36 @@ export default {
     handleCurrentChange (val) {
       // 把当前页的用户选择提交一下服务器
       let vm = this
-      let obj = { addUsers: vm.addUsers, removeUsers: vm.removeUsers }
-      this.$store.dispatch('saveUsers', obj)
-      .then(() => {
+      this.saveUsers(() => {
         // 翻页操作
         vm.clear()
         vm.startNum = val
         vm.onSearch()
       })
+    },
+    nextStep () {
+      this.saveUsers(() => { this.$router.push({ path: '/channel/result' }) })
+    },
+    saveUsers (successFn) {  // 保存当页的用户勾选操作,参数为成功后的回调函数
+      let obj = { addUsers: this.addUsers, removeUsers: this.removeUsers }
+      this.$store.dispatch('saveUsers', obj)
+      .then(() => { successFn() })
       .catch(() => { this.$message.error('保存渠道用户出错') })
     },
     onSearch () {
       let vm = this
+      this.formInline.channelID = this.channel.id
       // this.$ajax.post('/admin/user/list/' + this.startNum + '/' + this.pageSize, this.formInline)
       let param = {pageNo: this.startNum, pageSize: this.pageSize, form: this.formInline}
-      this.$store.dispatch('getQualifiedUsers', param)
-        .then((response) => {
-          vm.afterRequest(response)
-        })
-        .catch(function (response) {
-          console.log(response)
-        })
+      this.saveUsers(() => {
+        vm.$store.dispatch('getQualifiedUsers', param)
+          .then((response) => {
+            vm.afterRequest(response)
+          })
+          .catch(function (response) {
+            console.log(response)
+          })
+      })
     }
   }
 }

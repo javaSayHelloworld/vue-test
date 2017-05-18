@@ -5,6 +5,7 @@ import * as types from '../mutation-types'
 
 // initial state
 const state = {
+  step: false,
   channels: [],
   channel: {
     id: '',

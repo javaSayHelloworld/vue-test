@@ -1,13 +1,13 @@
 import Vue from 'vue'
-import Router from 'vue-router'
+import VueRouter from 'vue-router'
 import channelMain from 'views/channel/main'
 import channelFirst from 'views/channel/first'
 import channelSecond from 'views/channel/second'
 import channelResult from 'views/channel/result'
 
-Vue.use(Router)
+Vue.use(VueRouter)
 
-export default new Router({
+const router = new VueRouter({
   routes: [
     { path: '/', name: 'channelMain', component: channelMain },
     { path: '/channel/first', name: 'channelFirst', component: channelFirst },
@@ -15,3 +15,5 @@ export default new Router({
     { path: '/channel/result', name: 'channelResult', component: channelResult }
   ]
 })
+
+export default router
